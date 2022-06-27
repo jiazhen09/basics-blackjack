@@ -1,258 +1,179 @@
-// main function runs on each player's turn.
+var dealerSum = 0;
+var playerSum = 0;
 
-// the sequence of actions in the game would follow:
+var dealerAceCounter = 0;
+var playerAceCounter = 0; 
 
-// 1. shuffling of deck
-//  shuffle on page load.
-// create an array consisting on all the cards? -> 52 cards
-// create a random generator function to "shuffle" the cards - perhaps a number generator that randomly selects indexes and push into a new array.
+var hidden;
+var deck;
 
-// empty array to contain cards
-let deck = [];
-let shuffledDeck = [];
+var okToHit = true; 
 
-let firstCard;
-let secondCard;
+window.onload = function() {
+    createDeck();
+    shuffleDeck();
+    startRolling();
+}
 
-let splitCardOne;
-let splitCardTwo;
+document.getElementById("input-field").addEventListener("change", (e)=>{ 
+  document.getElementById("output-div").innerHTML= `Welcome ${e.target.value} to Casino Blackjack! <p>  Click 'Hit' or 'Stand' to play and best of luck! <p> Click 'Restart' for the next round! </p>`
 
-let splitCardOneFinal = 0;
-let splitCardTwoFinal = 0;
-let splitcounter = 0;
+});
 
-let playerCardOne;
-let dealerCardOne;
-let playerCardTwo;
-let dealerCardTwo;
+var createDeck = function (){
+    let values = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+    let suits = ["Spades", "Diamonds", "Clubs", "Hearts"];
+    deck = [];
 
-let playerHitCard = 0;
-let dealerHitCard = 0;
-
-let total;
-
-let playerFinalResult;
-let computerFinalResult;
-
-let gameMode = "playerTurn";
-
-// declare suits value
-let ace = 11;
-let jack = 10;
-let queen = 10;
-let king = 10;
-
-// var main = function (input) {
-//   var shuffleDeck = 
-//   var myOutputValue = "hello world";
-//   return myOutputValue;
-// };
-
-// declare card elements
-const SUITS = ["Spades", "Diamonds", "Club", "Heart"];
-const VALUES = [
-  ace,
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  jack,
-  queen,
-  king,
-];
-
-// 2. user clicks submit to deal cards
-// When user click submit, the program gives the player 1 card facing up, then 1 card for the computer face down. The player then receives another card, face up, and then another for the dealer, face up.
-
-let addCardsToDeck = function () {
-  for (let p = 0; p < 6; p++) {
-    for (let i = 0; i < SUITS.length; i++) {
-      for (let h = 0; h < VALUES.length; h++) {
-        deck.push(VALUES[h] + " " + SUITS[i]);
-      }
+    for (let i = 0; i < suits.length; i++) {
+        for (let h = 0; h < values.length; h++) {
+            deck.push(values[h] + "-" + suits[i]); //A-C -> K-C, A-D -> K-D
+        }
     }
-  }
-};
-
-addCardsToDeck();
-
-let shuffleDeck = function () {
-  for (let i = 0; i < deck.length; i++) {
-    let shuffle = Math.floor(Math.random() * deck.length);
-    shuffledDeck.push(deck[shuffle]);
-  }
-};
-
-// show one player card up, and one dealer card down.
-let firstDealCard = function () {
-  // shift = remove the first item from the array
-  playerCardOne = shuffledDeck.shift();
-  dealerCardOne = shuffledDeck.shift();
-  console.log(dealerCardOne);
-
-  playerCardTwo = shuffledDeck.shift();
-  dealerCardTwo = shuffledDeck.shift();
-
-  let result = `Player's first card: ${playerCardOne}<br><br>
-  Player's second card: ${playerCardTwo}<br><br>
-  Dealer's first card: hidden<br><br>
-  Dealer's second card: ${dealerCardTwo}`;
-  return result;
-};
-
-firstDealCard();
-
-let hitCard = function () {
-  // shift = remove the first item from the array
-  if (gameMode == "playerTurn") {
-    playerHitCard = shuffledDeck.shift();
-  } else if (gameMode == "dealerTurn") {
-    dealerHitCard = shuffledDeck.shift();
-  }
-  console.log(playerHitCard);
-  return parseFloat(playerHitCard);
-};
-
-//  it's a button
-//  you click button, the deck will come up with 2 cards, (ideal scenario is we can see the cards, instead of them telling me what the cards are.)
-
-// 3. the player's hand and computer's hand are analyzed for winning conditions. e.g. blackjack.
-// if user has blackjack, a notice will appear above the cards. else proceed to the next step.
-
-let convertValue = function(input1, input2){
-  firstCard = parseFloat(input1);
-  console.log(firstCard);
-  secondCard = parseFloat(input2);
-  console.log(secondCard);
 }
 
-// only work for player game mode
-let splitCards = function(){ 
-  if (firstCard == secondCard){
-    return "Player to choose split or stay.";
-  }
-  else {return "Calculating total value";
-  // continue with totalValue logic 
-  }
-}
-
-let choosesplit = function(){
-  // after choosing split for the first time, counter splitcardonefinal + split card
-  splitCardOneFinal += firstCard
-  splitCardTwoFinal += secondCard
- // after choosing split for the first time, counter above + new cards given
-    splitCardOne = hitCard();
-    splitCardOneFinal += splitCardOne;
-    splitCardTwo = hitCard();
-    splitCardTwoFinal += splitCardTwo;
-    splitcounter +=1;
-
-    if (splitcounter == 3)
-    {return "No more splits.";} 
-  else {return "Continue";}
-}
-
-// i < 2 (0,1,2 = 3 times)
-
-let totalValue = function () {
-  if (firstCard + secondCard <= 10) {
-    ace = 1;
-  } else {
-    ace = 11;
-  }
-
-  total = firstCard + secondCard;
-
-  if (total == 21) {
-    return "black jack";
-  }
-
-  console.log(total);
-  return total;
-}
-
-// give total value for player card. player will hit or stand.
-
-// 4. the user will decide whether to hit or stand.
-// a, either decide by using submit button with input
-// b, buttons to decide the choice
-
-let playerChoice = function (hitOrStand) {
-  if (hitOrStand == "hit") {
-    // then deal another card for the player
-    total += hitCard();
-    if (total < 21) {
-      return `Your new total is ${total}. Choose hit or stand for next round.`;
-    } else if (total == 21) {
-      return `Player has 21, It is now the dealer's turn.`;
-    } else {
-      return `Your new total is ${total}. You died.`;
+var shuffleDeck = function(){
+  mixDeck = [];
+    for (let i = 0; i < deck.length; i++) {
+        let h = Math.floor(Math.random() * deck.length); 
+        mixDeck.push(deck[h]);
     }
-  } else if (hitOrStand == "stand") {
-    // then the player turn ends
-    gameMode == "dealerTurn";
-    console.log("End turn");
-    playerFinalResult = total;
-    return `Player's turn has ended. It is now the Dealer's turn.`;
+}
+
+var startRolling = function () {
+    hidden = mixDeck.pop(); 
+    dealerSum += assessValue(hidden);
+    dealerAceCounter += checkAce(hidden);
+
+    for (let i = 0; i < 1; i++) {
+      let cardImg = document.createElement("img");
+      let card = mixDeck.pop();
+      cardImg.src = "./cards/" + card + ".png";
+      dealerSum += assessValue(card);
+      dealerAceCounter += checkAce(card);
+      document.getElementById("dealer-cards").append(cardImg); 
+    }
+
+    for (let i = 0; i < 2; i++) {
+        let cardImg = document.createElement("img");
+        let card = mixDeck.pop();
+        cardImg.src = "./cards/" + card + ".png";
+        playerSum += assessValue(card);
+        playerAceCounter += checkAce(card);
+        document.getElementById("player-cards").append(cardImg); 
+    }
+
+    document.getElementById("hit").addEventListener("click", hit);
+    document.getElementById("stand").addEventListener("click", stand);
+    document.getElementById("restart").style.visibility = "hidden"
+
+}
+
+var hit = function () {
+    if (!okToHit) {
+        return;
+    }
+    let cardImg = document.createElement("img");
+    let card = mixDeck.pop();
+    cardImg.src = "./cards/" + card + ".png";
+    playerSum += assessValue(card);
+    playerAceCounter += checkAce(card);
+    document.getElementById("player-cards").append(cardImg);
+
+    if (dropAce(playerSum, playerAceCounter) >= 21) { 
+        okToHit = false;
+        document.getElementById("hit").disabled = true;
+
+    }
+
+}
+
+var stand = function () {
+    playerSum = dropAce(playerSum, playerAceCounter);
+
+    okToHit = false;
+    document.getElementById("hidden").src = "./cards/" + hidden + ".png"; 
+
+    while (dealerSum < 17) {
+      let cardImg = document.createElement("img");
+      let card = mixDeck.pop();
+      cardImg.src = "./cards/" + card + ".png";
+      dealerSum += assessValue(card);
+      dealerAceCounter += checkAce(card);
+      document.getElementById("dealer-cards").append(cardImg);
+      document.getElementById("stand").disabled = true;
   }
-};
 
-let computerChoice = function () {
-  // if computer's total is blackjack, win.
-  // if computer's total is below 16, hit.
-  // if computer's opening hand is 17, stand.
-  // if computer's total is above player's total hand, stand.
-  // if computer's hit total is above 18, stand.
-  totalValue(dealerCardOne, dealerCardTwo);
-  console.log(dealerCardOne);
-  console.log(dealerCardTwo);
+  dealerSum = dropAce(dealerSum, dealerAceCounter);
 
-  let result;
-  if (total == 21) {
-    result = "black jack";
-  } else if (total > 16) {
-    result = "Stand";
-    // new total;
-  } else if (total <= 16) {
-    total += hitCard();
-    result = total;
-  } else if (total < 18) {
-    total += hitCard();
-    result = total;
-  } else if (total > 18) {
-    result = "Stand";
-  } else if (total > 21) {
-    result = `Computer hand is ${total}. He died.`;
-  }
-  computerFinalResult = total;
-  return result;
-};
+  console.log("Player Final Sum ->", playerSum);
+  console.log("Dealer Final Sum ->", dealerSum);
 
-let winner = function () {
-  if (playerFinalResult > computerFinalResult) {
-    return "Player wins!";
-  } else if (playerFinalResult < computerFinalResult) {
-    return "Player lose!";
-  } else {
-    return "Draw!";
-  }
-};
+    let outputMessage = "";
+    if (playerSum > 21) {
+      outputMessage = "Oops, You Lose!"; 
+    }
+    else if (dealerSum > 21) {
+      outputMessage = "Congrats, You win!";
+    }
 
-// draw or skip
+    else if (playerSum == 21 && dealerSum == 21) {
+      outputMessage = "Rare Blackjack Tie!";
+    }
+    else if (playerSum == 21 && dealerSum != 21) {
+      outputMessage = "Double Congrats, You have a Blackjack win!";
+    }
 
-// 5. the cards are analysed for winning/losing conditions.
-// 21? bust?
+    else if (playerSum == dealerSum) {
+      outputMessage = "Close fight, it's a Tie!";
+    }
+    else if (playerSum > dealerSum) {
+      outputMessage = "Congrats, You Win!";
+    }
+    else if (playerSum < dealerSum) {
+      outputMessage = "Oops, You Lose!";
+    }
 
-// 6. once the player has decide to end the turn, the computer will now hit or stand automatically based on the game rules.
+    document.getElementById("hit").disabled = true;
+    document.getElementById("stand").disabled = true;
+    document.getElementById("dealer-sum").innerText = dealerSum;
+    document.getElementById("player-sum").innerText = playerSum;
+    document.getElementById("results").innerText = outputMessage;
 
-// 7. the winner of the round will be decided, and the game comes to an end with an option to play another round.
+    document.getElementById("restart").style.visibility = "visible";
+    document.getElementById("restart").addEventListener("click", restart);
 
-shuffleDeck();
+}
+var restart = function () {
+  window.location.reload();
+    }
 
-// Splits
-// Add hand-splitting functionality to the game. If the player has two of the same kind of card, they can choose to split and get dealt 2 new cards. Full splitting rules here. Dealer is not allowed to split.
+var assessValue = function(card){
+    let dataarray = card.split("-"); 
+    let value = dataarray[0];
+
+    if (isNaN(value)) { 
+        if (value == "A") {
+            return 11;
+        }
+        return 10;
+    }
+
+    return parseInt(value); 
+}
+
+var checkAce = function(card){
+    if (card[0] == "A") {
+        return 1;
+    }
+    return 0;
+}
+
+function dropAce(mySum, myAceCounter) {
+    while (mySum > 21 && myAceCounter > 0) {
+        mySum -= 10;
+        myAceCounter -= 1;
+    }
+    return mySum;
+}
+
